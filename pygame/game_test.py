@@ -100,7 +100,69 @@ class TestGame(unittest.TestCase):
         expected_ball_y = self.player_paddle.y - self.player_paddle.height
         self.assertEqual(self.ball.x, expected_ball_x)
         self.assertEqual(self.ball.y, expected_ball_y)
+    
+    def test_wall_rows_and_cols(self):
+        self.assertEqual(len(self.wall.blocks), self.wall.rows)
+        for row in self.wall.blocks:
+            self.assertEqual(len(row), self.wall.cols)
 
+    def test_ball_speed(self):
+        initial_speed_x = self.ball.speed_x
+        initial_speed_y = self.ball.speed_y
+        self.ball.move()
+        self.assertEqual(self.ball.speed_x, initial_speed_x)
+        self.assertEqual(self.ball.speed_y, initial_speed_y)
+
+    def test_wall_blocks(self):
+        self.assertIsInstance(self.wall.blocks[0][0], pygame.Rect)
+
+    def test_paddle_speed(self):
+        initial_x = self.player_paddle.x
+        self.player_paddle.move("left")
+        self.assertEqual(self.player_paddle.x, initial_x - self.player_paddle.speed)
+
+    def test_ball_movement_after_speed_change(self):
+        self.ball.speed_x = 5
+        self.ball.speed_y = -5
+        initial_x = self.ball.x
+        initial_y = self.ball.y
+        self.ball.move()
+        self.assertEqual(self.ball.x, initial_x + self.ball.speed_x)
+        self.assertEqual(self.ball.y, initial_y + self.ball.speed_y)
+
+    def test_wall_blocks_count(self):
+        total_blocks = self.wall.rows * self.wall.cols
+        self.assertEqual(len(self.wall.blocks), total_blocks)
+
+    def test_paddle_dimensions(self):
+        self.assertEqual(self.player_paddle.width, 80)
+        self.assertEqual(self.player_paddle.height, 20)
+
+    def test_ball_radius(self):
+        self.assertEqual(self.ball.radius, 8)
+
+    def test_paddle_move_boundary(self):
+        initial_x = self.player_paddle.x
+        screen_width = 800  # Assuming screen width
+        self.player_paddle.move("left")
+        # The paddle should not move beyond the left boundary (0)
+        self.assertEqual(self.player_paddle.x, max(0, initial_x - self.player_paddle.speed))
+
+        initial_x = self.player_paddle.x
+        self.player_paddle.move("right")
+        # The paddle should not move beyond the right boundary (screen width - paddle width)
+        self.assertEqual(self.player_paddle.x, min(screen_width - self.player_paddle.width, initial_x + self.player_paddle.speed))
+
+    def test_ball_move_boundary(self):
+        initial_x = self.ball.x
+        initial_y = self.ball.y
+        screen_width = 800  # Assuming screen width
+        screen_height = 600  # Assuming screen height
+        self.ball.move()
+        # The ball should not move beyond the screen boundaries
+        self.assertEqual(self.ball.x, max(0 + self.ball.radius, min(screen_width - self.ball.radius, initial_x + self.ball.speed_x)))
+        self.assertEqual(self.ball.y, max(0 + self.ball.radius, min(screen_height - self.ball.radius, initial_y + self.ball.speed_y)))
+    
     def tearDown(self):
         pygame.quit()
 
